@@ -7,10 +7,13 @@ export default function BlogPage() {
   const posts = getAllPosts();
 
   return (
-    <div className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">博客</h1>
-        <p className="text-muted-foreground">共 {posts.length} 篇</p>
+    <div className="space-y-10">
+      <div className="space-y-3">
+        <h1 className="font-heading text-3xl font-light tracking-wide">博客</h1>
+        <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">
+          共 {posts.length} 篇
+        </p>
+        <div className="hairline" />
       </div>
       {posts.length === 0 ? (
         <p className="text-muted-foreground">暂无文章。</p>

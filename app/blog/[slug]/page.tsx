@@ -14,11 +14,15 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
   return (
     <article>
-      <header className="mb-8 space-y-2 border-b pb-6">
-        <h1 className="text-3xl font-semibold tracking-tight">{post.title}</h1>
-        <time dateTime={post.date} className="text-sm text-muted-foreground">
+      <header className="mb-10 space-y-4">
+        <h1 className="font-heading text-3xl font-light tracking-wide sm:text-4xl">{post.title}</h1>
+        <time
+          dateTime={post.date}
+          className="block text-[0.7rem] tracking-[0.2em] text-muted-foreground uppercase"
+        >
           {post.date}
         </time>
+        <div className="hairline" />
       </header>
       <div className="prose prose-neutral max-w-none dark:prose-invert">
         <MDXRemote
