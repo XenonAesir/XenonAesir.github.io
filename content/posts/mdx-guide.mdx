@@ -1,0 +1,23 @@
+---
+title: MDX 使用指南
+date: 2026-11-04
+summary: 说明 frontmatter 字段，并放一段代码用来验证高亮。
+---
+
+## frontmatter
+
+文件顶部的三横线之间是元数据，列表页和详情页都从这里读：
+
+- `title` — 标题
+- `date` — 发布日期，格式 `YYYY-MM-DD`
+- `summary` — 列表页显示的摘要
+
+## 代码块
+
+代码块由 `rehype-pretty-code` 在构建时高亮，运行时不需要 JavaScript。
+
+```ts
+export function greet(name: string): string {
+  return `你好，${name}`;
+}
+```
