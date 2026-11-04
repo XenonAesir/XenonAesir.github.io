@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, Geist, Geist_Mono, Great_Vibes } from "next/font/google";
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,11 +31,15 @@ const greatVibes = Great_Vibes({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Xenon Aesir",
-    template: "%s · Xenon Aesir",
+    default: SITE_TITLE,
+    template: `%s · ${SITE_TITLE}`,
   },
-  description: "Xenon Aesir 的个人主页与博客。",
+  description: SITE_DESCRIPTION,
+  alternates: {
+    types: { "application/rss+xml": "/feed.xml" },
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
