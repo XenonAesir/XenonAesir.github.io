@@ -85,35 +85,36 @@
 }
 
 .dark {
-  --background: #181e32;
-  --foreground: #e0e6f2;
-  --card: #263050;
-  --card-foreground: #e0e6f2;
-  --popover: #263050;
-  --popover-foreground: #e0e6f2;
+  /* 底色比之前抬高一档，纯黑对比会让白字显得更粗更大 */
+  --background: #1b2237;
+  --foreground: #d5dceb;
+  --card: #232c47;
+  --card-foreground: #d5dceb;
+  --popover: #232c47;
+  --popover-foreground: #d5dceb;
   --primary: #72a8d8;
-  --primary-foreground: #10182b;
-  --secondary: #2a3557;
-  --secondary-foreground: #cdd6ea;
-  --muted: #263050;
-  --muted-foreground: #7e90b2;
-  --accent: #2c3a5e;
-  --accent-foreground: #e2e9f5;
+  --primary-foreground: #131a2c;
+  --secondary: #2a3452;
+  --secondary-foreground: #c6d0e4;
+  --muted: #232c47;
+  --muted-foreground: #8595b5;
+  --accent: #2c3757;
+  --accent-foreground: #dbe2f0;
   --destructive: #c4565e;
-  --border: rgba(165, 188, 230, 0.2);
-  --input: rgba(165, 188, 230, 0.25);
+  --border: rgba(165, 188, 230, 0.18);
+  --input: rgba(165, 188, 230, 0.22);
   --ring: #5080b0;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: #1d2540;
-  --sidebar-foreground: #cdd6ea;
+  --sidebar: #1f2740;
+  --sidebar-foreground: #c6d0e4;
   --sidebar-primary: #72a8d8;
   --sidebar-primary-foreground: #10182b;
-  --sidebar-accent: #263050;
-  --sidebar-accent-foreground: #e2e9f5;
+  --sidebar-accent: #232c47;
+  --sidebar-accent-foreground: #dbe2f0;
   --sidebar-border: rgba(165, 188, 230, 0.2);
   --sidebar-ring: #5080b0;
 }
@@ -156,7 +157,7 @@ body {
 .dark body {
   background-image:
     radial-gradient(ellipse 70% 45% at 50% -12%, rgba(80, 128, 176, 0.26), transparent 70%),
-    radial-gradient(ellipse 55% 40% at 12% 100%, rgba(38, 48, 80, 0.85), transparent 70%);
+    radial-gradient(ellipse 55% 40% at 12% 100%, rgba(43, 54, 88, 0.85), transparent 70%);
 }
 
 .glass-panel {
