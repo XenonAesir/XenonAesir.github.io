@@ -57,7 +57,7 @@ export default function Home() {
             >
               <Link
                 href="/blog"
-                className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/50 px-6 py-2.5 font-heading text-sm tracking-[0.12em] backdrop-blur-sm transition-all duration-300 hover:-translate-y-px hover:border-ring hover:bg-card/80"
+                className="inline-flex items-center gap-2 rounded-none border border-border bg-card/50 px-6 py-2.5 font-heading text-sm tracking-[0.12em] backdrop-blur-sm transition-all duration-300 hover:-translate-y-px hover:border-ring hover:bg-card/80"
               >
                 阅读文章
               </Link>
@@ -67,7 +67,7 @@ export default function Home() {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-lg border border-transparent px-4 py-2.5 text-xs tracking-[0.2em] text-muted-foreground uppercase transition-colors hover:text-foreground"
+                  className="inline-flex items-center gap-2 rounded-none border border-transparent px-4 py-2.5 text-xs tracking-[0.2em] text-muted-foreground uppercase transition-colors hover:text-foreground"
                 >
                   {social.label}
                 </a>

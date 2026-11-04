@@ -34,7 +34,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             <span aria-hidden>·</span>
             <span>{post.minutes} 分钟</span>
             {post.tags.map((tag) => (
-              <span key={tag} className="rounded-full border border-border px-2 py-0.5">
+              <span key={tag} className="border border-border px-2 py-0.5">
                 {tag}
               </span>
             ))}

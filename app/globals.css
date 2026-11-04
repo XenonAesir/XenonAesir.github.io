@@ -73,7 +73,7 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.875rem;
+  --radius: 0rem;
   --sidebar: #f0f5fd;
   --sidebar-foreground: #1c2942;
   --sidebar-primary: #3f6f9e;
@@ -143,7 +143,7 @@ code[data-theme*=" "] span {
 }
 
 [data-rehype-pretty-code-figure] pre {
-  @apply overflow-x-auto rounded-lg border bg-muted p-4 text-sm;
+  @apply overflow-x-auto rounded-none border bg-muted p-4 text-sm;
 }
 
 /* —— InternalBeyond 设计语言：夜色渐变底、玻璃面板、隐没细线 —— */
@@ -158,33 +158,6 @@ body {
   background-image:
     radial-gradient(ellipse 70% 45% at 50% -12%, rgba(80, 128, 176, 0.26), transparent 70%),
     radial-gradient(ellipse 55% 40% at 12% 100%, rgba(48, 60, 96, 0.85), transparent 70%);
-}
-
-.glass-panel {
-  background: color-mix(in oklab, var(--card) 72%, transparent);
-  backdrop-filter: blur(16px) saturate(1.15);
-  -webkit-backdrop-filter: blur(16px) saturate(1.15);
-  box-shadow: 0 8px 32px rgba(24, 38, 64, 0.06);
-}
-
-.dark .glass-panel {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
-}
-
-.glass-card {
-  transition:
-    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glass-card:hover {
-  box-shadow: 0 14px 44px rgba(24, 38, 64, 0.12);
-  transform: translateY(-2px);
-}
-
-.dark .glass-card:hover {
-  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.28);
 }
 
 .hairline {

@@ -21,7 +21,7 @@ function TagChip({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-full border px-3 py-1 text-xs tracking-[0.1em] transition-colors ${
+      className={`rounded-none border px-3 py-1 text-xs tracking-[0.1em] transition-colors ${
         active
           ? "border-ring bg-accent text-accent-foreground"
           : "border-border text-muted-foreground hover:text-foreground"
@@ -77,7 +77,7 @@ export function BlogBrowser({ posts }: { posts: PostMeta[] }) {
           onChange={(event) => search(event.target.value)}
           placeholder="搜索标题、摘要或标签"
           aria-label="搜索文章"
-          className="w-full rounded-lg border border-border bg-card/50 px-4 py-2.5 text-sm outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-ring"
+          className="w-full rounded-none border border-border bg-card/50 px-4 py-2.5 text-sm outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-ring"
         />
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2">

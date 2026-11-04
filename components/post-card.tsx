@@ -5,7 +5,7 @@ import type { PostMeta } from "@/lib/posts";
 export function PostCard({ post }: { post: PostMeta }) {
   return (
     <Link href={`/blog/${post.slug}`} className="block">
-      <Card className="glass-panel glass-card rounded-2xl">
+      <Card className="bg-card/50 transition-colors hover:border-ring">
         <CardHeader>
           <CardTitle className="font-heading text-xl font-normal tracking-wide">{post.title}</CardTitle>
           <CardDescription className="font-light">{post.summary}</CardDescription>
@@ -15,7 +15,7 @@ export function PostCard({ post }: { post: PostMeta }) {
             <span>{post.minutes} 分钟</span>
             {post.draft && <span className="text-primary">草稿</span>}
             {post.tags.map((tag) => (
-              <span key={tag} className="rounded-full border border-border px-2 py-0.5 tracking-[0.1em]">
+              <span key={tag} className="border border-border px-2 py-0.5 tracking-[0.1em]">
                 {tag}
               </span>
             ))}

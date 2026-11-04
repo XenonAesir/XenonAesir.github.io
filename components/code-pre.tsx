@@ -21,7 +21,7 @@ export function CodePre(props: ComponentProps<"pre">) {
       <button
         type="button"
         onClick={copy}
-        className="absolute top-2 right-2 rounded-md border border-border bg-card/80 px-2 py-1 text-[0.68rem] tracking-[0.1em] text-muted-foreground uppercase opacity-0 backdrop-blur transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+        className="absolute top-2 right-2 rounded-none border border-border bg-card/80 px-2 py-1 text-[0.68rem] tracking-[0.1em] text-muted-foreground uppercase opacity-0 backdrop-blur transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
       >
         {copied ? "已复制" : "复制"}
       </button>
