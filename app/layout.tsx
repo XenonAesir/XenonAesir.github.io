@@ -47,8 +47,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col">
         <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
-          <header className="sticky top-4 z-50 mx-auto w-full max-w-6xl px-6 sm:px-10">
-            <nav className="glass-panel flex h-14 items-center justify-between rounded-2xl border border-border px-5">
+          <header className="relative z-50">
+            <nav className="mx-auto flex h-20 w-full max-w-6xl items-center justify-between px-6 sm:px-10">
               <Link href="/" className="font-heading text-lg tracking-wide">
                 Xenon Aesir
               </Link>
@@ -62,6 +62,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 <ThemeToggle />
               </div>
             </nav>
+            <div className="nav-rule" aria-hidden />
           </header>
           <main className="flex-1">{children}</main>
           <footer className="border-t border-border/60">

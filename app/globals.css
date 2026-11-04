@@ -225,6 +225,17 @@ body {
     0 1px 9px rgba(20, 32, 60, 0.45);
 }
 
+/* 导航下方分隔线：中央略浓，向两端淡出 */
+.nav-rule {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in oklab, var(--ring) 22%, transparent) 50%,
+    transparent 100%
+  );
+}
+
 /* 标题两行之间的渐隐细线，尺寸对齐 IB 的 home-rule */
 .title-rule {
   height: 1px;
