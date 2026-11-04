@@ -191,6 +191,40 @@ body {
   background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--ring) 45%, transparent), transparent);
 }
 
+/* 署名行：结构照搬 IB 的 .home-credit-label / .home-credit-sui。
+   IB 是纯深色底，签名用白色 + 蓝光；这里浅色模式改用前景色，
+   深色模式保留 IB 原值。 */
+.home-credit-label {
+  font-family: var(--font-cormorant), serif;
+  font-style: italic;
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.82rem;
+  color: var(--muted-foreground);
+}
+
+.home-credit-sui {
+  font-family: var(--font-great-vibes), cursive;
+  font-style: normal;
+  text-transform: none;
+  font-size: 1.7rem;
+  letter-spacing: 0.01em;
+  vertical-align: -0.16em;
+  margin: 0 0.16em;
+  color: var(--foreground);
+  text-shadow:
+    0 0 11px color-mix(in oklab, var(--ring) 35%, transparent),
+    0 1px 9px color-mix(in oklab, var(--primary) 18%, transparent);
+}
+
+.dark .home-credit-sui {
+  color: #ffffff;
+  text-shadow:
+    0 0 11px rgba(120, 160, 220, 0.55),
+    0 1px 9px rgba(20, 32, 60, 0.45);
+}
+
 /* 标题两行之间的渐隐细线，尺寸对齐 IB 的 home-rule */
 .title-rule {
   height: 1px;

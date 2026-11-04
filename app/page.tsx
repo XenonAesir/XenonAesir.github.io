@@ -22,31 +22,37 @@ export default function Home() {
               className="rise mt-9 inline-flex flex-col items-start gap-3.5"
               style={{ animationDelay: "120ms" }}
             >
+              {/* 占位：换成项目名 */}
               <span className="font-heading text-[clamp(1.6rem,3.6vw,2.4rem)] leading-none font-normal tracking-[0.24em] uppercase">
-                Xenon
+                Project
               </span>
               <span className="title-rule self-center" />
               <span className="font-heading text-[clamp(1.6rem,3.6vw,2.4rem)] leading-none font-normal tracking-[0.24em] text-muted-foreground/45 uppercase">
-                Aesir
+                Name
               </span>
             </h1>
 
+            <p className="rise mt-7" style={{ animationDelay: "240ms" }}>
+              <span className="home-credit-label">Designed by</span>
+              <span className="home-credit-sui">Xenon Aesir</span>
+            </p>
+
             <p
               className="rise mt-10 font-heading text-lg leading-loose text-foreground sm:text-xl"
-              style={{ animationDelay: "260ms" }}
+              style={{ animationDelay: "320ms" }}
             >
               写代码，也写字。
             </p>
             <p
               className="rise mt-2 max-w-md text-sm leading-7 font-light text-muted-foreground"
-              style={{ animationDelay: "340ms" }}
+              style={{ animationDelay: "400ms" }}
             >
               这里记录我做过的东西，和终于想明白的事。
             </p>
 
             <div
               className="rise mt-10 flex flex-wrap items-center gap-3"
-              style={{ animationDelay: "440ms" }}
+              style={{ animationDelay: "480ms" }}
             >
               <Link
                 href="/blog"
