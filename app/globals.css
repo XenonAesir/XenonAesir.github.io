@@ -283,6 +283,48 @@ body {
   }
 }
 
+/* —— 滚动条：雾蓝细线，静止半透明，hover 变浓 —— */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--ring) 45%, transparent) transparent;
+}
+
+html.dark {
+  scrollbar-color: color-mix(in oklab, var(--ring) 55%, transparent) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* 透明边框 + content-box 让滑块看起来比轨道细一圈 */
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 9999px;
+  background-clip: content-box;
+  background-color: color-mix(in oklab, var(--ring) 40%, transparent);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in oklab, var(--ring) 75%, transparent);
+}
+
+html.dark::-webkit-scrollbar-thumb,
+.dark ::-webkit-scrollbar-thumb {
+  background-color: color-mix(in oklab, var(--ring) 55%, transparent);
+}
+
+html.dark::-webkit-scrollbar-thumb:hover,
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in oklab, var(--ring) 85%, transparent);
+}
+
 /* 正文排版跟随色板，避免 prose 插件把文字拉回中性灰 */
 .prose {
   --tw-prose-body: var(--muted-foreground);
