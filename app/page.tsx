@@ -11,39 +11,41 @@ export default function Home() {
 
   return (
     <>
-      <section className="relative flex min-h-[calc(100vh-6rem)] items-center overflow-hidden">
-        <div className="hero-glow pointer-events-none absolute inset-0" aria-hidden />
-        <div className="relative mx-auto w-full max-w-6xl px-6 py-24 sm:px-10">
+      <section className="flex min-h-[calc(100vh-6rem)] items-center">
+        <div className="mx-auto w-full max-w-6xl px-6 py-24 sm:px-10">
           <div className="max-w-3xl">
             <p className="rise text-[0.68rem] font-light tracking-[0.32em] text-muted-foreground uppercase">
               Personal Site · Est. 2026
             </p>
 
-            <h1 className="rise mt-10" style={{ animationDelay: "120ms" }}>
-              <span className="block font-heading text-[clamp(3rem,9vw,7rem)] leading-[0.95] font-light tracking-[0.14em] uppercase">
+            <h1
+              className="rise mt-9 inline-flex flex-col items-start gap-3.5"
+              style={{ animationDelay: "120ms" }}
+            >
+              <span className="font-heading text-[clamp(1.6rem,3.6vw,2.4rem)] leading-none font-normal tracking-[0.24em] uppercase">
                 Xenon
               </span>
-              <span className="my-6 block h-px w-28 bg-[linear-gradient(90deg,transparent,var(--ring),transparent)]" />
-              <span className="block font-heading text-[clamp(3rem,9vw,7rem)] leading-[0.95] font-light tracking-[0.14em] text-muted-foreground/55 uppercase">
+              <span className="title-rule self-center" />
+              <span className="font-heading text-[clamp(1.6rem,3.6vw,2.4rem)] leading-none font-normal tracking-[0.24em] text-muted-foreground/45 uppercase">
                 Aesir
               </span>
             </h1>
 
             <p
-              className="rise mt-12 font-heading text-xl leading-loose text-foreground sm:text-2xl"
+              className="rise mt-10 font-heading text-lg leading-loose text-foreground sm:text-xl"
               style={{ animationDelay: "260ms" }}
             >
               写代码，也写字。
             </p>
             <p
-              className="rise mt-3 max-w-md text-sm leading-7 font-light text-muted-foreground"
+              className="rise mt-2 max-w-md text-sm leading-7 font-light text-muted-foreground"
               style={{ animationDelay: "340ms" }}
             >
               这里记录我做过的东西，和终于想明白的事。
             </p>
 
             <div
-              className="rise mt-12 flex flex-wrap items-center gap-3"
+              className="rise mt-10 flex flex-wrap items-center gap-3"
               style={{ animationDelay: "440ms" }}
             >
               <Link
