@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 function NavContent({ className = "" }: { className?: string }) {
@@ -27,18 +27,21 @@ function NavContent({ className = "" }: { className?: string }) {
 
 export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
+  const staticHeaderRef = useRef<HTMLElement>(null);
 
+  // 首屏导航完全滚出视口的那一刻，常驻导航接上
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > window.innerHeight * 0.8);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const el = staticHeaderRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => setScrolled(!entry.isIntersecting));
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   return (
     <>
       {/* 首屏内的导航：随页面滚走 */}
-      <header className="fade-in relative z-50">
+      <header ref={staticHeaderRef} className="fade-in relative z-50">
         <NavContent className="h-20" />
         <div className="nav-rule" aria-hidden />
       </header>
