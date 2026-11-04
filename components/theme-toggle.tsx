@@ -2,6 +2,7 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { THEME_SOURCE_KEY } from "@/components/auto-theme";
 import { Button } from "@/components/ui/button";
 
 export function ThemeToggle() {
@@ -12,7 +13,10 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon-sm"
       aria-label="切换深色模式"
-      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+      onClick={() => {
+        localStorage.setItem(THEME_SOURCE_KEY, "manual");
+        setTheme(resolvedTheme === "dark" ? "light" : "dark");
+      }}
     >
       <Moon className="dark:hidden" />
       <Sun className="hidden dark:block" />

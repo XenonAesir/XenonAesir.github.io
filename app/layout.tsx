@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Geist, Geist_Mono, Great_Vibes } from "next/font/google";
+import { AutoTheme } from "@/components/auto-theme";
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "@/lib/site";
@@ -51,6 +52,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col">
         <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
+          <AutoTheme />
           <SiteHeader />
           <main className="flex-1">{children}</main>
           <footer className="border-t border-border/60">

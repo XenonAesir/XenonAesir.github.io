@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LocalClock } from "@/components/local-clock";
 import { getAllPosts } from "@/lib/posts";
 
 const socials = [
@@ -15,7 +16,7 @@ export default function Home() {
         <div className="mx-auto w-full max-w-6xl px-6 py-24 sm:px-10">
           <div className="max-w-3xl">
             <p className="rise text-[0.68rem] font-light tracking-[0.32em] text-muted-foreground uppercase">
-              Personal Site · Est. 2026
+              <LocalClock />
             </p>
 
             <h1
