@@ -38,7 +38,7 @@ export function SiteHeader() {
   return (
     <>
       {/* 首屏内的导航：随页面滚走 */}
-      <header className="relative z-50">
+      <header className="fade-in relative z-50">
         <NavContent className="h-20" />
         <div className="nav-rule" aria-hidden />
       </header>
