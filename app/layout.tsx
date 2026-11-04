@@ -40,7 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col">
         <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
-          <header className="sticky top-4 z-50 mx-auto w-full max-w-3xl px-6">
+          <header className="sticky top-4 z-50 mx-auto w-full max-w-6xl px-6 sm:px-10">
             <nav className="glass-panel flex h-14 items-center justify-between rounded-2xl border border-border px-5">
               <Link href="/" className="font-heading text-lg tracking-wide">
                 Xenon Aesir
@@ -56,9 +56,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </div>
             </nav>
           </header>
-          <main className="mx-auto w-full max-w-3xl flex-1 px-6 pt-10 pb-20">{children}</main>
+          <main className="flex-1">{children}</main>
           <footer className="border-t border-border/60">
-            <div className="mx-auto w-full max-w-3xl px-6 py-8 text-xs tracking-[0.2em] text-muted-foreground">
+            <div className="mx-auto w-full max-w-6xl px-6 py-8 text-xs tracking-[0.2em] text-muted-foreground sm:px-10">
               © XENON AESIR
             </div>
           </footer>

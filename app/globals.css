@@ -191,6 +191,34 @@ body {
   background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--ring) 45%, transparent), transparent);
 }
 
+/* 首页氛围光：右上暖蓝、左下冷蓝，模拟 IB 背景的漫射 */
+.hero-glow {
+  background:
+    radial-gradient(ellipse 55% 45% at 78% 12%, color-mix(in oklab, var(--ring) 22%, transparent), transparent 68%),
+    radial-gradient(ellipse 45% 35% at 8% 85%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 70%);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 1s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: none;
+  }
+}
+
 /* 正文排版跟随色板，避免 prose 插件把文字拉回中性灰 */
 .prose {
   --tw-prose-body: var(--muted-foreground);

@@ -13,7 +13,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   if (!post) notFound();
 
   return (
-    <article>
+    <article className="mx-auto w-full max-w-3xl px-6 pt-10 pb-20">
       <header className="mb-10 space-y-4">
         <h1 className="font-heading text-3xl font-light tracking-wide sm:text-4xl">{post.title}</h1>
         <time
