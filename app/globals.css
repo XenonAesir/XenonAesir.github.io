@@ -243,6 +243,12 @@ body {
   background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--ring) 55%, transparent), transparent);
 }
 
+/* 首屏正好一屏：5rem 是导航高度，dvh 兼容移动端地址栏伸缩 */
+.hero-screen {
+  min-height: calc(100vh - 5rem);
+  min-height: calc(100dvh - 5rem);
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;

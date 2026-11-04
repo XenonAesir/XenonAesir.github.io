@@ -11,7 +11,7 @@ export default function Home() {
 
   return (
     <>
-      <section className="flex min-h-[calc(100vh-6rem)] items-center">
+      <section className="hero-screen flex items-center">
         <div className="mx-auto w-full max-w-6xl px-6 py-24 sm:px-10">
           <div className="max-w-3xl">
             <p className="rise text-[0.68rem] font-light tracking-[0.32em] text-muted-foreground uppercase">
