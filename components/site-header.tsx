@@ -53,7 +53,7 @@ export function SiteHeader() {
         }`}
         inert={!scrolled}
       >
-        <NavContent className="h-16" />
+        <NavContent className="h-20" />
         <div className="nav-rule" aria-hidden />
       </header>
     </>
