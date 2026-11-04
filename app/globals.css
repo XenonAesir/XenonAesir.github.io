@@ -291,6 +291,11 @@ body {
 
 /* —— 滚动条：雾蓝细线，静止半透明，hover 变浓 —— */
 html {
+  /* 无论页面多高都预留滚动条宽度，切换页面时内容不会横跳。
+     scrollbar-gutter 需要 html 是滚动容器才生效，所以配 overflow-y: scroll；
+     轨道设成透明，短页面看不到多余的槽。 */
+  scrollbar-gutter: stable;
+  overflow-y: scroll;
   scrollbar-width: thin;
   scrollbar-color: color-mix(in oklab, var(--ring) 45%, transparent) transparent;
 }
