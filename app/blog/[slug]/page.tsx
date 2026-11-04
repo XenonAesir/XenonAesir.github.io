@@ -1,6 +1,10 @@
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
+import rehypeKatex from "rehype-katex";
 import rehypePrettyCode from "rehype-pretty-code";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import "katex/dist/katex.min.css";
 import { getAllPosts, getPostBySlug } from "@/lib/posts";
 
 export function generateStaticParams() {
@@ -29,7 +33,9 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           source={post.content}
           options={{
             mdxOptions: {
+              remarkPlugins: [remarkGfm, remarkMath],
               rehypePlugins: [
+                rehypeKatex,
                 [
                   rehypePrettyCode,
                   {
