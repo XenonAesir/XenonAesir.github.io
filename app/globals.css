@@ -86,20 +86,20 @@
 
 .dark {
   /* 底色比之前抬高一档，纯黑对比会让白字显得更粗更大 */
-  --background: #1b2237;
-  --foreground: #d5dceb;
-  --card: #232c47;
-  --card-foreground: #d5dceb;
-  --popover: #232c47;
-  --popover-foreground: #d5dceb;
+  --background: #1e2639;
+  --foreground: #cbd4e5;
+  --card: #262f4b;
+  --card-foreground: #cbd4e5;
+  --popover: #262f4b;
+  --popover-foreground: #cbd4e5;
   --primary: #72a8d8;
-  --primary-foreground: #131a2c;
-  --secondary: #2a3452;
-  --secondary-foreground: #c6d0e4;
-  --muted: #232c47;
-  --muted-foreground: #8595b5;
-  --accent: #2c3757;
-  --accent-foreground: #dbe2f0;
+  --primary-foreground: #141b2d;
+  --secondary: #2c3654;
+  --secondary-foreground: #c3cee2;
+  --muted: #262f4b;
+  --muted-foreground: #8d9cba;
+  --accent: #2f3a5a;
+  --accent-foreground: #d8dfee;
   --destructive: #c4565e;
   --border: rgba(165, 188, 230, 0.18);
   --input: rgba(165, 188, 230, 0.22);
@@ -109,8 +109,8 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: #1f2740;
-  --sidebar-foreground: #c6d0e4;
+  --sidebar: #232c47;
+  --sidebar-foreground: #c3cee2;
   --sidebar-primary: #72a8d8;
   --sidebar-primary-foreground: #10182b;
   --sidebar-accent: #232c47;
@@ -157,7 +157,7 @@ body {
 .dark body {
   background-image:
     radial-gradient(ellipse 70% 45% at 50% -12%, rgba(80, 128, 176, 0.26), transparent 70%),
-    radial-gradient(ellipse 55% 40% at 12% 100%, rgba(43, 54, 88, 0.85), transparent 70%);
+    radial-gradient(ellipse 55% 40% at 12% 100%, rgba(48, 60, 96, 0.85), transparent 70%);
 }
 
 .glass-panel {
