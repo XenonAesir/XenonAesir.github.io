@@ -369,12 +369,18 @@
   const mDelay = new Float32Array(MCOUNT);
   const mStiff = new Float32Array(MCOUNT);
   const mSize = new Float32Array(MCOUNT);
+  const mPhase = new Float32Array(MCOUNT);   // 各自的呼吸/摆动相位
+  const mSpeed = new Float32Array(MCOUNT);
+  const mIdle = new Float32Array(MCOUNT);    // 常态微动幅度
 
   for (let i = 0; i < MCOUNT; i++) {
     mPosX[i] = 0;
     mPosY[i] = 0;
     mStiff[i] = 0.03 + mRand() * 0.06;
     mSize[i] = 1 + mRand() * 2.4;
+    mPhase[i] = mRand() * Math.PI * 2;
+    mSpeed[i] = 0.0004 + mRand() * 0.0006;
+    mIdle[i] = 4 + mRand() * 10;
   }
 
   let mState = "";
@@ -437,29 +443,32 @@
 
     mctx.clearRect(0, 0, W, H);
 
-    const dim = [], bright = [];
+    const layers = [[], [], [], []];
     for (let i = 0; i < MCOUNT; i++) {
-      const tgtX = cx + (shape.pts[i * 2] - 0.5) * boxW;
-      const tgtY = cy + (shape.pts[i * 2 + 1] - 0.5) * boxH;
+      // 目标点自带缓慢摆动，形态稳定后画面仍然在动
+      const sway = reduceMotion.matches ? 0 : mIdle[i];
+      const tgtX = cx + (shape.pts[i * 2] - 0.5) * boxW + Math.sin(now * mSpeed[i] + mPhase[i]) * sway;
+      const tgtY = cy + (shape.pts[i * 2 + 1] - 0.5) * boxH + Math.cos(now * mSpeed[i] * 0.83 + mPhase[i]) * sway;
+
       if (!reduceMotion.matches && elapsed > mDelay[i]) {
         const k = 1 - Math.pow(1 - mStiff[i], dt / 16.7);
         mPosX[i] += (tgtX - mPosX[i]) * k;
         mPosY[i] += (tgtY - mPosY[i]) * k;
       }
-      const moving = Math.min(1, Math.hypot(tgtX - mPosX[i], tgtY - mPosY[i]) / 160);
-      (moving > 0.25 ? bright : dim).push(i);
+
+      // 亮度跟各自相位，不跟"离目标多远"，否则换形态时全体一起闪
+      const pulse = 0.5 + 0.5 * Math.sin(now * 0.0016 + mPhase[i]);
+      layers[Math.min(3, Math.floor(pulse * 4))].push(i);
     }
 
     mctx.fillStyle = "#C9D2E1";
-    mctx.globalAlpha = 0.42;
-    for (const i of dim) {
-      const s = mSize[i];
-      mctx.fillRect(mPosX[i] - s / 2, mPosY[i] - s / 2, s, s);
-    }
-    mctx.globalAlpha = 0.95;
-    for (const i of bright) {
-      const s = mSize[i] * 1.15;
-      mctx.fillRect(mPosX[i] - s / 2, mPosY[i] - s / 2, s, s);
+    const alphas = [0.3, 0.5, 0.72, 0.95];
+    for (let b = 0; b < 4; b++) {
+      mctx.globalAlpha = alphas[b];
+      for (const i of layers[b]) {
+        const s = mSize[i];
+        mctx.fillRect(mPosX[i] - s / 2, mPosY[i] - s / 2, s, s);
+      }
     }
     mctx.globalAlpha = 1;
   }
