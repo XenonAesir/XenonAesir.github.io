@@ -67,6 +67,10 @@
     color: var(--muted); background: color-mix(in oklab, var(--bg) 65%, transparent);
     padding: 8px 14px; border: 1px solid var(--line);
   }
+
+  /* ── 四、波点阵 ── */
+  #dots { position: relative; }
+  #dot-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 </style>
 </head>
 <body>
@@ -75,6 +79,7 @@
   <a href="#trail">① 拖尾像素</a>
   <a href="#particles">② 粒子场</a>
   <a href="#morph">③ 滚动变形</a>
+  <a href="#dots">④ 波点阵</a>
 </header>
 
 <!-- ══════════ 一、GitHub 式拖尾像素 ══════════ -->
@@ -113,7 +118,17 @@
     <div class="chapter" data-state="venn"><span>③ 维恩 · VENN</span></div>
     <div class="chapter" data-state="chladni"><span>④ 克拉尼图形 · CHLADNI</span></div>
     <div class="chapter" data-state="stream"><span>⑤ 流 · STREAM</span></div>
-    <div class="chapter" data-state="drift"><span>⑥ 弥散 · DRIFT</span></div>
+    <div class="chapter" data-state="loop"><span>⑥ 环 · LOOP</span></div>
+    <div class="chapter" data-state="drift"><span>⑦ 弥散 · DRIFT</span></div>
+  </div>
+</section>
+
+<!-- ══════════ 四、波点阵 ══════════ -->
+<section id="dots">
+  <canvas id="dot-canvas" aria-hidden="true"></canvas>
+  <div class="caption">
+    <h1>波点阵</h1>
+    <p>固定点阵 · 行进波带点亮</p>
   </div>
 </section>
 
@@ -362,6 +377,23 @@
       return [x, 0.5 + Math.sin(x * Math.PI * 4) * 0.18 + (mRand() - 0.5) * 0.06];
     }) },
     drift: { aspect: 1, pts: samplePoints(() => [0.5 + (mRand() - 0.5) * 0.72, 0.5 + (mRand() - 0.5) * 0.72]) },
+    // 斜置椭圆环：每颗粒子有自己的角度和半轴，随时间绕一圈
+    loop: (() => {
+      const pts = new Float32Array(MCOUNT * 2);
+      const angles = new Float32Array(MCOUNT);
+      const rx = new Float32Array(MCOUNT);
+      const ry = new Float32Array(MCOUNT);
+      for (let i = 0; i < MCOUNT; i++) {
+        const a = mRand() * Math.PI * 2;
+        const jitter = (mRand() - 0.5) * 0.03;
+        angles[i] = a;
+        rx[i] = 0.30 + jitter;
+        ry[i] = 0.10 + jitter * 0.4;
+        pts[i * 2] = 0.5 + Math.cos(a) * rx[i];
+        pts[i * 2 + 1] = 0.5 + Math.sin(a) * ry[i];
+      }
+      return { aspect: 1, pts, angles, rx, ry };
+    })(),
   };
 
   const mPosX = new Float32Array(MCOUNT);
@@ -444,17 +476,34 @@
     mctx.clearRect(0, 0, W, H);
 
     const layers = [[], [], [], []];
+    const accent = [];
     for (let i = 0; i < MCOUNT; i++) {
+      let nx = shape.pts[i * 2];
+      let ny = shape.pts[i * 2 + 1];
+      let isAccent = false;
+
+      // 环形态：粒子沿椭圆自己绕圈，并有一段蓝色高亮跟着转
+      if (shape.angles) {
+        const a = shape.angles[i] + now * 0.00018;
+        nx = 0.5 + Math.cos(a) * shape.rx[i];
+        ny = 0.5 + Math.sin(a) * shape.ry[i];
+        const hi = (now * 0.00045) % (Math.PI * 2);
+        const diff = Math.abs((((a - hi) % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI);
+        isAccent = diff < 0.45;
+      }
+
       // 目标点自带缓慢摆动，形态稳定后画面仍然在动
       const sway = reduceMotion.matches ? 0 : mIdle[i];
-      const tgtX = cx + (shape.pts[i * 2] - 0.5) * boxW + Math.sin(now * mSpeed[i] + mPhase[i]) * sway;
-      const tgtY = cy + (shape.pts[i * 2 + 1] - 0.5) * boxH + Math.cos(now * mSpeed[i] * 0.83 + mPhase[i]) * sway;
+      const tgtX = cx + (nx - 0.5) * boxW + Math.sin(now * mSpeed[i] + mPhase[i]) * sway;
+      const tgtY = cy + (ny - 0.5) * boxH + Math.cos(now * mSpeed[i] * 0.83 + mPhase[i]) * sway;
 
       if (!reduceMotion.matches && elapsed > mDelay[i]) {
         const k = 1 - Math.pow(1 - mStiff[i], dt / 16.7);
         mPosX[i] += (tgtX - mPosX[i]) * k;
         mPosY[i] += (tgtY - mPosY[i]) * k;
       }
+
+      if (isAccent) { accent.push(i); continue; }
 
       // 亮度跟各自相位，不跟"离目标多远"，否则换形态时全体一起闪
       const pulse = 0.5 + 0.5 * Math.sin(now * 0.0016 + mPhase[i]);
@@ -470,9 +519,73 @@
         mctx.fillRect(mPosX[i] - s / 2, mPosY[i] - s / 2, s, s);
       }
     }
+
+    // 环上的高亮段
+    mctx.fillStyle = "#6E8BFF";
+    mctx.globalAlpha = 0.95;
+    for (const i of accent) {
+      const s = mSize[i] * 1.2;
+      mctx.fillRect(mPosX[i] - s / 2, mPosY[i] - s / 2, s, s);
+    }
     mctx.globalAlpha = 1;
   }
   requestAnimationFrame(morphFrame);
+
+  /* ─────────────────────────────
+     四、固定点阵 + 行进波带
+     点不动，是"波"经过时把它们逐个点亮
+     ───────────────────────────── */
+  const dotCanvas = document.getElementById("dot-canvas");
+  const dctx = dotCanvas.getContext("2d");
+  let dots = [], dotW = 0, dotH = 0;
+
+  function resizeDots() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    dotW = dotCanvas.clientWidth;
+    dotH = dotCanvas.clientHeight;
+    dotCanvas.width = Math.round(dotW * dpr);
+    dotCanvas.height = Math.round(dotH * dpr);
+    dctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const gap = 26;
+    dots = [];
+    for (let y = gap / 2; y < dotH; y += gap)
+      for (let x = gap / 2; x < dotW; x += gap) dots.push(x, y);
+  }
+  resizeDots();
+  addEventListener("resize", resizeDots);
+
+  function dotFrame(now) {
+    requestAnimationFrame(dotFrame);
+    if (!dotW) return;
+    const t = now * 0.001;
+
+    // 波心缓慢漂移，波带一圈圈向外推
+    const ox = dotW * (0.5 + 0.3 * Math.sin(t * 0.23));
+    const oy = dotH * (0.5 + 0.28 * Math.cos(t * 0.19));
+
+    dctx.clearRect(0, 0, dotW, dotH);
+
+    dctx.fillStyle = "rgba(160, 185, 225, 0.18)";
+    for (let i = 0; i < dots.length; i += 2) dctx.fillRect(dots[i] - 1, dots[i + 1] - 1, 2, 2);
+
+    // 单道波前向外扩散，高斯衰减：点被扫过时亮起再熄灭
+    const maxR = Math.hypot(dotW, dotH) * 0.62;
+    const front = (t * 130) % (maxR + 280);
+
+    dctx.fillStyle = "#6E8BFF";
+    for (let i = 0; i < dots.length; i += 2) {
+      const dx = dots[i] - ox;
+      const dy = dots[i + 1] - oy;
+      const k = Math.exp(-Math.pow((Math.sqrt(dx * dx + dy * dy) - front) / 55, 2));
+      if (k < 0.06) continue;
+      const s = 2 + k * 3;
+      dctx.globalAlpha = 0.2 + k * 0.8;
+      dctx.fillRect(dots[i] - s / 2, dots[i + 1] - s / 2, s, s);
+    }
+    dctx.globalAlpha = 1;
+  }
+  requestAnimationFrame(dotFrame);
 })();
 </script>
 </body>
