@@ -371,14 +371,15 @@
   const mSize = new Float32Array(MCOUNT);
 
   for (let i = 0; i < MCOUNT; i++) {
-    mPosX[i] = 0.5 + (mRand() - 0.5) * 0.1;
-    mPosY[i] = 0.5 + (mRand() - 0.5) * 0.1;
+    mPosX[i] = 0;
+    mPosY[i] = 0;
     mStiff[i] = 0.03 + mRand() * 0.06;
     mSize[i] = 1 + mRand() * 2.4;
   }
 
   let mState = "";
   let mSwitchAt = 0;
+  let mReady = false;
 
   function setShape(name) {
     if (name === mState || !SHAPES[name]) return;
@@ -419,22 +420,33 @@
 
     const shape = SHAPES[mState] || SHAPES.logo;
     const W = morphCanvas.clientWidth, H = morphCanvas.clientHeight;
+    // 位置全部存像素坐标：换形态时旧图形不会被新宽高比立刻拉扯，
+    // 只有被"唤醒"的粒子才开始移动。
     const boxW = Math.min(W * 0.76, 900);
     const boxH = boxW / shape.aspect;
     const cx = W / 2, cy = H / 2;
     const elapsed = now - mSwitchAt;
 
+    if (!mReady) {
+      for (let i = 0; i < MCOUNT; i++) {
+        mPosX[i] = cx + (shape.pts[i * 2] - 0.5) * boxW + (mRand() - 0.5) * 30;
+        mPosY[i] = cy + (shape.pts[i * 2 + 1] - 0.5) * boxH + (mRand() - 0.5) * 30;
+      }
+      mReady = true;
+    }
+
     mctx.clearRect(0, 0, W, H);
 
     const dim = [], bright = [];
     for (let i = 0; i < MCOUNT; i++) {
-      const tgtX = shape.pts[i * 2], tgtY = shape.pts[i * 2 + 1];
+      const tgtX = cx + (shape.pts[i * 2] - 0.5) * boxW;
+      const tgtY = cy + (shape.pts[i * 2 + 1] - 0.5) * boxH;
       if (!reduceMotion.matches && elapsed > mDelay[i]) {
         const k = 1 - Math.pow(1 - mStiff[i], dt / 16.7);
         mPosX[i] += (tgtX - mPosX[i]) * k;
         mPosY[i] += (tgtY - mPosY[i]) * k;
       }
-      const moving = Math.min(1, Math.hypot(tgtX - mPosX[i], tgtY - mPosY[i]) * 6);
+      const moving = Math.min(1, Math.hypot(tgtX - mPosX[i], tgtY - mPosY[i]) / 160);
       (moving > 0.25 ? bright : dim).push(i);
     }
 
@@ -442,12 +454,12 @@
     mctx.globalAlpha = 0.42;
     for (const i of dim) {
       const s = mSize[i];
-      mctx.fillRect(cx + (mPosX[i] - 0.5) * boxW - s / 2, cy + (mPosY[i] - 0.5) * boxH - s / 2, s, s);
+      mctx.fillRect(mPosX[i] - s / 2, mPosY[i] - s / 2, s, s);
     }
     mctx.globalAlpha = 0.95;
     for (const i of bright) {
       const s = mSize[i] * 1.15;
-      mctx.fillRect(cx + (mPosX[i] - 0.5) * boxW - s / 2, cy + (mPosY[i] - 0.5) * boxH - s / 2, s, s);
+      mctx.fillRect(mPosX[i] - s / 2, mPosY[i] - s / 2, s, s);
     }
     mctx.globalAlpha = 1;
   }
