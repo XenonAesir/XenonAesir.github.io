@@ -49,6 +49,24 @@
 
   /* ── 二、粒子场 ── */
   #field { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  /* ── 三、滚动变形 ── */
+  /* overflow 必须可见，否则 sticky 的 canvas 不会相对视口固定 */
+  #morph { position: relative; height: auto; display: block; overflow: visible; }
+  #morph-canvas {
+    position: sticky; top: 0;
+    width: 100%; height: 100vh; display: block; z-index: 0;
+  }
+  .chapters { position: relative; margin-top: -100vh; z-index: 1; }
+  .chapter {
+    height: 100vh; display: flex; align-items: center; justify-content: flex-start;
+    padding-left: 8vw; pointer-events: none;
+  }
+  .chapter span {
+    font-size: 12px; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--muted); background: color-mix(in oklab, var(--bg) 65%, transparent);
+    padding: 8px 14px; border: 1px solid var(--line);
+  }
 </style>
 </head>
 <body>
@@ -56,6 +74,7 @@
 <header>
   <a href="#trail">① 拖尾像素</a>
   <a href="#particles">② 粒子场</a>
+  <a href="#morph">③ 滚动变形</a>
 </header>
 
 <!-- ══════════ 一、GitHub 式拖尾像素 ══════════ -->
@@ -82,6 +101,19 @@
   <div class="caption">
     <h1>粒子场</h1>
     <p>TypedArray · 种子随机 · 遮罩采样 · 鼠标排斥</p>
+  </div>
+</section>
+
+<!-- ══════════ 三、滚动驱动的形态切换 ══════════ -->
+<section id="morph">
+  <canvas id="morph-canvas" aria-hidden="true"></canvas>
+  <div class="chapters">
+    <div class="chapter" data-state="logo"><span>① 标识 · LOGO</span></div>
+    <div class="chapter" data-state="lattice"><span>② 晶格 · LATTICE</span></div>
+    <div class="chapter" data-state="venn"><span>③ 维恩 · VENN</span></div>
+    <div class="chapter" data-state="chladni"><span>④ 克拉尼图形 · CHLADNI</span></div>
+    <div class="chapter" data-state="stream"><span>⑤ 流 · STREAM</span></div>
+    <div class="chapter" data-state="drift"><span>⑥ 弥散 · DRIFT</span></div>
   </div>
 </section>
 
@@ -268,6 +300,158 @@
   }
 
   raf = requestAnimationFrame(frame);
+
+  /* ─────────────────────────────
+     三、滚动驱动的形态切换
+     每个 chapter 带 data-state，滚到哪块就换成哪套目标点，
+     每颗粒子有独立的启动延迟，所以换形态是"错峰流动"而不是整体平移。
+     ───────────────────────────── */
+  const morphCanvas = document.getElementById("morph-canvas");
+  const mctx = morphCanvas.getContext("2d");
+  const MCOUNT = 1600;
+  const mRand = mulberry32(0x5e11a);
+
+  function samplePoints(fn) {
+    const arr = new Float32Array(MCOUNT * 2);
+    for (let i = 0; i < MCOUNT; i++) {
+      const p = fn();
+      arr[i * 2] = p[0];
+      arr[i * 2 + 1] = p[1];
+    }
+    return arr;
+  }
+
+  function textMask(text) {
+    const off = document.createElement("canvas");
+    off.width = 900; off.height = 280;
+    const c = off.getContext("2d");
+    c.fillStyle = "#fff";
+    c.font = "600 150px ui-serif, Georgia, serif";
+    c.textAlign = "center";
+    c.textBaseline = "middle";
+    c.fillText(text, 450, 145);
+    const d = c.getImageData(0, 0, off.width, off.height).data;
+    const pts = [];
+    for (let y = 0; y < off.height; y += 2)
+      for (let x = 0; x < off.width; x += 2)
+        if (d[(y * off.width + x) * 4 + 3] > 140) pts.push([x / off.width, y / off.height]);
+    return pts;
+  }
+
+  const logoSrc = textMask("RAIN LAND");
+
+  const SHAPES = {
+    logo: { aspect: 900 / 280, pts: samplePoints(() => logoSrc[(mRand() * logoSrc.length) | 0]) },
+    lattice: { aspect: 1, pts: samplePoints(() => {
+      const n = 45;
+      return [((mRand() * n) | 0) / (n - 1), ((mRand() * n) | 0) / (n - 1)];
+    }) },
+    venn: { aspect: 1, pts: samplePoints(() => {
+      const cx = 0.5 + (mRand() < 0.5 ? -0.16 : 0.16);
+      const a = mRand() * Math.PI * 2;
+      return [cx + Math.cos(a) * 0.17, 0.5 + Math.sin(a) * 0.17];
+    }) },
+    chladni: { aspect: 1, pts: samplePoints(() => {
+      for (;;) {
+        const x = mRand(), y = mRand();
+        if (Math.abs(Math.sin(3 * Math.PI * x) * Math.sin(3 * Math.PI * y)) < 0.06) return [x, y];
+      }
+    }) },
+    stream: { aspect: 2, pts: samplePoints(() => {
+      const x = mRand();
+      return [x, 0.5 + Math.sin(x * Math.PI * 4) * 0.18 + (mRand() - 0.5) * 0.06];
+    }) },
+    drift: { aspect: 1, pts: samplePoints(() => [0.5 + (mRand() - 0.5) * 0.72, 0.5 + (mRand() - 0.5) * 0.72]) },
+  };
+
+  const mPosX = new Float32Array(MCOUNT);
+  const mPosY = new Float32Array(MCOUNT);
+  const mDelay = new Float32Array(MCOUNT);
+  const mStiff = new Float32Array(MCOUNT);
+  const mSize = new Float32Array(MCOUNT);
+
+  for (let i = 0; i < MCOUNT; i++) {
+    mPosX[i] = 0.5 + (mRand() - 0.5) * 0.1;
+    mPosY[i] = 0.5 + (mRand() - 0.5) * 0.1;
+    mStiff[i] = 0.03 + mRand() * 0.06;
+    mSize[i] = 1 + mRand() * 2.4;
+  }
+
+  let mState = "";
+  let mSwitchAt = 0;
+
+  function setShape(name) {
+    if (name === mState || !SHAPES[name]) return;
+    mState = name;
+    mSwitchAt = performance.now();
+    for (let i = 0; i < MCOUNT; i++) {
+      mDelay[i] = mRand() * 550;   // 错峰 0–550ms
+      mStiff[i] = 0.03 + mRand() * 0.06;
+    }
+  }
+
+  function resizeMorph() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    morphCanvas.width = Math.round(morphCanvas.clientWidth * dpr);
+    morphCanvas.height = Math.round(morphCanvas.clientHeight * dpr);
+    mctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resizeMorph();
+  addEventListener("resize", resizeMorph);
+
+  const chapters = [...document.querySelectorAll(".chapter")];
+  let mPrev = 0;
+
+  function morphFrame(now) {
+    requestAnimationFrame(morphFrame);
+    const dt = mPrev ? Math.min(now - mPrev, 50) : 16.7;
+    mPrev = now;
+
+    // 选中离视口中线最近的章节
+    const mid = innerHeight / 2;
+    let best = null, bestDist = Infinity;
+    for (const chapter of chapters) {
+      const r = chapter.getBoundingClientRect();
+      const d = Math.abs(r.top + r.height / 2 - mid);
+      if (r.bottom > 0 && r.top < innerHeight && d < bestDist) { best = chapter; bestDist = d; }
+    }
+    if (best) setShape(best.dataset.state);
+
+    const shape = SHAPES[mState] || SHAPES.logo;
+    const W = morphCanvas.clientWidth, H = morphCanvas.clientHeight;
+    const boxW = Math.min(W * 0.76, 900);
+    const boxH = boxW / shape.aspect;
+    const cx = W / 2, cy = H / 2;
+    const elapsed = now - mSwitchAt;
+
+    mctx.clearRect(0, 0, W, H);
+
+    const dim = [], bright = [];
+    for (let i = 0; i < MCOUNT; i++) {
+      const tgtX = shape.pts[i * 2], tgtY = shape.pts[i * 2 + 1];
+      if (!reduceMotion.matches && elapsed > mDelay[i]) {
+        const k = 1 - Math.pow(1 - mStiff[i], dt / 16.7);
+        mPosX[i] += (tgtX - mPosX[i]) * k;
+        mPosY[i] += (tgtY - mPosY[i]) * k;
+      }
+      const moving = Math.min(1, Math.hypot(tgtX - mPosX[i], tgtY - mPosY[i]) * 6);
+      (moving > 0.25 ? bright : dim).push(i);
+    }
+
+    mctx.fillStyle = "#C9D2E1";
+    mctx.globalAlpha = 0.42;
+    for (const i of dim) {
+      const s = mSize[i];
+      mctx.fillRect(cx + (mPosX[i] - 0.5) * boxW - s / 2, cy + (mPosY[i] - 0.5) * boxH - s / 2, s, s);
+    }
+    mctx.globalAlpha = 0.95;
+    for (const i of bright) {
+      const s = mSize[i] * 1.15;
+      mctx.fillRect(cx + (mPosX[i] - 0.5) * boxW - s / 2, cy + (mPosY[i] - 0.5) * boxH - s / 2, s, s);
+    }
+    mctx.globalAlpha = 1;
+  }
+  requestAnimationFrame(morphFrame);
 })();
 </script>
 </body>

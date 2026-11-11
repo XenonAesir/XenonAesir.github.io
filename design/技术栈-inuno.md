@@ -142,3 +142,45 @@ ctx.fillRect(x - size / 2, y - size / 2, size, size);
 - 这套效果的价值在"密度 + 动态"，稀疏之后就没意义了
 
 **如果要做，最小的版本是**：60~120 个点、单色、无鼠标交互、随滚动缓慢漂移，作为背景层点缀。
+
+---
+
+## 十、滚动驱动的形态切换（2026-11-11 补充）
+
+下滑时粒子会重新组合成不同图形，机制是**内容块声明形态，粒子系统跟着切换**。
+
+### 每个区块带一个 `data-state`
+
+抓取三个页面后统计到的状态名：
+
+| 页面 | data-state |
+|---|---|
+| `/en` | `logo` `lattice` `venn` `chladni` `stream` `drift` `loop` `signal` |
+| `/en/physical` | `chladni` `collapse` `horizon` `real` `search` `stream` `tune` `venn` |
+| `/en/digital` | `drift` `lattice` `signal`（带 `data-v="1|2"` 做变体） |
+
+另有 `data-layout="stage|corner"` 控制粒子的整体落位区域。
+
+### 切换方式
+
+代码里可见的两条链路：
+
+```js
+// 滚动时选出视口中线所在的区块
+onLoopStage: (state, block) => {...}   // 记录当前 stage
+setBlock(el) / setState(state, v, layout)
+
+// 粒子每帧向"当前状态对应的目标点"缓动
+onPhysStep / onPhysRead / onPhysClear
+```
+
+关键实现细节（从压缩代码还原）：
+
+- 目标点由**若干套预计算的坐标集合**给出，切换状态 = 换目标集合
+- 每颗粒子有独立的 `delay` 与 `stiffness` 数组，所以换形态是**错峰流动**，不是整体平移
+- 缓动公式 `x += (target - x) * (1 - (1 - a)^(dt/16.7))`，与帧率无关
+- 形态本身多用数学/遮罩生成：`chladni` 是驻波节线、`lattice` 是网格、`venn` 是两个圆
+
+### 在测试页里的复现
+
+`playground/tech-demos.html` 第三块按同一机制实现：6 个 `data-state` 区块 + sticky canvas + 每颗粒子独立延迟。为了不依赖任何库，形态用文字遮罩和几行数学公式生成。
