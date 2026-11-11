@@ -251,14 +251,56 @@ GitHub 的取舍是对的：他们要的是**精确可控的产品演示**，不
 
 **每个格子有独立的 `--delay-color`（约 1.0–1.3 秒随机分布）**，所以一旦触发，颜色是逐格错峰亮起的——这就是"波"的来源。颜色取自 GitHub 品牌色（绿 `#08872B`、亮绿 `#23EA57`、紫 `#C898FD`）。
 
-### 3. 未复现的部分
+### 3. 拖尾像素（已确认）
 
-用无头浏览器反复加载 github.com，并对上面的元素做过鼠标横扫测试：**没有观察到"跟随鼠标轨迹的像素背景"**——Hero 的 SVG 网格在鼠标移动前后完全一致，变化的是那段滚动驱动视频。
+鼠标划过 Hero 时**追加临时 `<rect>`**，不是 `:hover`，所以只出现一次拖尾、不会持续。
 
-可能的原因：
+```html
+<g class="Trail__w_GPlK">
+  <rect class="TrailPixel__sCD4Qw" width="1" height="1" x="102" y="59" fill="#5FED83"/>
+  <rect class="TrailPixel__sCD4Qw TrailPixelExiting__g5b0a8" width="1" height="1" x="97" y="61" fill="#…"/>
+  …
+</g>
+```
 
-- github.com 的 Hero 存在多个变体（多次加载时 `HeroSection` 有时存在、有时不存在），我们拿到的可能不是同一个版本
-- 该效果可能只对登录用户或特定地区/设备开放
-- 无头环境缺少某些能力（如 `matchMedia` 的分支判断）
+- 坐标就在上面那个 **143×84 的坐标系**里，所以每颗粒子天然是 10px 的方块
+- `width` / `height` 恒为 1，位置靠 `x` / `y` 换格
+- 颜色取品牌色板（实测到 `#5FED83` 等绿系）
 
-**待确认**：你看到的是不是 Hero 背后那层 10px 方格？鼠标靠近时是"局部点亮"还是"整块错峰扫过"？这决定它用的是逐格距离计算还是 `:hover` + 延迟。
+CSS 只有两条规则：
+
+```css
+.TrailPixel__sCD4Qw{
+  transform-box: fill-box;
+  transform-origin: 50%;
+  transform: scale(1);
+  transition: transform .5s cubic-bezier(.3, .41, .04, 1.01);
+}
+.TrailPixelExiting__g5b0a8{
+  transform: scale(0);   /* 加上这个类，0.5 秒缩没 */
+}
+```
+
+生命周期：
+
+1. 指针移动 → 屏幕坐标换算成网格坐标
+2. 插入一个 1×1 `<rect>`，随机取品牌色
+3. 下一次 tick 给同一元素加 `TrailPixelExiting`
+4. `scale(1) → scale(0)` 过渡 0.5s，结束后移除节点
+
+实测鼠标横穿一次时，同时存在的粒子只有 6 个，其中 3 个正在退出——说明**生成是节流的**，不是每个 `pointermove` 都插入。
+
+**为什么用 SVG 而不是 canvas**：每个像素可以交给 CSS transition 补间，浏览器负责调度；换成 canvas 就得手写缓动、清除和 rAF 循环。
+
+### 4. 复现要点（约 40 行）
+
+```
+一个 viewBox 143×84、preserveAspectRatio="none" 的 SVG
+├─ pointermove：屏幕坐标 → 网格坐标（取整）
+│    节流 ~30ms，避免每个事件都生成
+├─ 插入 <rect x y width=1 height=1 fill=随机色 class="trail">
+└─ 下一帧加 class="exit" → CSS transition scale(1 → 0)，0.5s
+      transitionend 时移除节点
+```
+
+不需要任何 3D 库，也不需要 canvas。
