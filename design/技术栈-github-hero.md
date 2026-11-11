@@ -186,3 +186,79 @@ GitHub 的取舍是对的：他们要的是**精确可控的产品演示**，不
 - 本站的价值在**阅读**，不在演示产品
 
 **如果将来要做**：一条 4~6 秒、500KB 以内的静音循环片段，或者纯 CSS 的入场动画就够。
+
+---
+
+## 十、补充：像素网格背景（2026-11-11 复测）
+
+后续复测时发现 Hero 背景还有一层和视频无关的东西，补记如下。
+
+### 1. Hero 背景是 inline SVG，不是 canvas
+
+对应元素：`class="Wrapper__H1gdC8 Background__x8lac6"`，里面是一个 `<svg>`：
+
+```html
+<svg preserveAspectRatio="none" viewBox="0 0 143 84" width="1424" height="836">
+  <defs>
+    <pattern id="background-grid-pattern-*" width="1" height="1" patternUnits="userSpaceOnUse">
+      <path d="M 1 0 H 0 V 1" stroke="var(--brand-color-border-subtle)"/>
+    </pattern>
+    <linearGradient id="background-grid-gradient-*" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0"   stop-color="var(--brand-color-canvas-subtle)" stop-opacity="1"/>
+      <stop offset="0.5" stop-color="var(--brand-color-canvas-subtle)" stop-opacity="0"/>
+      <stop offset="1"   stop-color="var(--brand-color-canvas-subtle)" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect fill="var(--brand-color-canvas-subtle)" width="143" height="84"/>
+  <rect fill="url(#background-grid-pattern-*)" width="143" height="84"/>
+  <path class="GridLine__RRlPv3" d="M 143 0 V 84 H 0" stroke="var(--brand-color-border-subtle)"/>
+  <rect fill="url(#background-grid-gradient-*)" width="143" height="84"/>
+
+  <g class="CornerDots___WcNtA" data-animate="true" transform="translate(2 2)">
+    <rect class="CornerDot__Za9opk" data-static="true"  width="1" height="1" fill="var(--base-color-scale-green-4)" style="--corner-dot-index: 0;"/>
+    <!-- …共 8 个，每个 1×1 单位 -->
+  </g>
+</svg>
+```
+
+**关键点：坐标系只有 143×84，靠 `preserveAspectRatio="none"` 拉伸到 1424×836。**
+所以 1 个 SVG 单位 ≈ 屏幕 10px，那个 1×1 的 `pattern` 就变成了 10px 的方格——这就是"像素网格"的来源。
+
+- 网格线是 1 单位的 `path`，用极淡的边框色
+- 顶部叠一层从实到透明的渐变，让网格往下淡出
+- 角落 8 个 `CornerDot` 是 1×1 的彩色方块，动画 `corner-dot-chase`，1.4s 无限循环
+
+### 2. 页面上另一处：200 格像素网格
+
+`MonaDivider` 区块里有一组 `Grid__6hdsPh`，`--column-count:25; --row-count:8`，共 **200 个 `<span class="Cell__TqfqAY">`**。
+
+每个格子用内联变量声明：
+
+```html
+<span class="Cell__TqfqAY" style="
+  --default-color:#a7bbad; --default-opacity:0;
+  --focus-color:#08872B;   --focus-opacity:0.7;
+  --delay-color:1.068s">
+```
+
+```css
+.Cell__TqfqAY:before{ background-color:var(--default-color); opacity:var(--default-opacity) }
+.Cell__TqfqAY:after { background-color:var(--focus-color); opacity:0;
+                      transition:opacity var(--duration) var(--base-easing-easeOut);
+                      transition-delay:var(--delay-color) }
+```
+
+**每个格子有独立的 `--delay-color`（约 1.0–1.3 秒随机分布）**，所以一旦触发，颜色是逐格错峰亮起的——这就是"波"的来源。颜色取自 GitHub 品牌色（绿 `#08872B`、亮绿 `#23EA57`、紫 `#C898FD`）。
+
+### 3. 未复现的部分
+
+用无头浏览器反复加载 github.com，并对上面的元素做过鼠标横扫测试：**没有观察到"跟随鼠标轨迹的像素背景"**——Hero 的 SVG 网格在鼠标移动前后完全一致，变化的是那段滚动驱动视频。
+
+可能的原因：
+
+- github.com 的 Hero 存在多个变体（多次加载时 `HeroSection` 有时存在、有时不存在），我们拿到的可能不是同一个版本
+- 该效果可能只对登录用户或特定地区/设备开放
+- 无头环境缺少某些能力（如 `matchMedia` 的分支判断）
+
+**待确认**：你看到的是不是 Hero 背后那层 10px 方格？鼠标靠近时是"局部点亮"还是"整块错峰扫过"？这决定它用的是逐格距离计算还是 `:hover` + 延迟。
