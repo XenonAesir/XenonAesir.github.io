@@ -71,6 +71,26 @@
   /* ── 四、波点阵 ── */
   #dots { position: relative; }
   #dot-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  /* ── 五、雨滴沉积 ── */
+  #rain { position: relative; }
+  #rain-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  /* ── 六、聚光 + 线条生长 ── */
+  #spot { position: relative; }
+  #spot::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(520px at var(--mx, 50%) var(--my, 40%),
+                rgba(114, 168, 216, 0.16), transparent 70%);
+  }
+  .grow-wrap { position: relative; z-index: 2; width: min(760px, 80vw); }
+  .grow-wrap h1 {
+    margin: 0 0 18px; font-size: 34px; font-weight: 300;
+    letter-spacing: .12em; color: var(--fg);
+  }
+  .grow-wrap p { margin: 0 0 26px; color: var(--muted); font-size: 13px; letter-spacing: .1em; }
+  .grow-line { display: block; width: 100%; height: 2px; overflow: visible; }
+  .grow-line path { stroke: #72a8d8; stroke-width: 1.5; fill: none; }
 </style>
 </head>
 <body>
@@ -80,6 +100,8 @@
   <a href="#particles">② 粒子场</a>
   <a href="#morph">③ 滚动变形</a>
   <a href="#dots">④ 波点阵</a>
+  <a href="#rain">⑤ 雨滴沉积</a>
+  <a href="#spot">⑥ 聚光</a>
 </header>
 
 <!-- ══════════ 一、GitHub 式拖尾像素 ══════════ -->
@@ -128,7 +150,30 @@
   <canvas id="dot-canvas" aria-hidden="true"></canvas>
   <div class="caption">
     <h1>波点阵</h1>
-    <p>固定点阵 · 行进波带点亮</p>
+    <p>固定点阵 · 行进波带 · 鼠标涟漪</p>
+  </div>
+</section>
+
+<!-- ══════════ 五、雨滴沉积 ══════════ -->
+<section id="rain">
+  <canvas id="rain-canvas" aria-hidden="true"></canvas>
+  <div class="caption">
+    <h1>雨滴沉积</h1>
+    <p>高度图 · 落点堆积 · 缓慢蒸发</p>
+  </div>
+</section>
+
+<!-- ══════════ 六、聚光 + 线条生长 ══════════ -->
+<section id="spot">
+  <div class="grow-wrap">
+    <h1>聚光与线条</h1>
+    <p>鼠标驱动光晕 · 滚动驱动线条生长</p>
+    <svg class="grow-line" viewBox="0 0 760 2" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 1 H760" />
+    </svg>
+    <svg class="grow-line" viewBox="0 0 760 2" preserveAspectRatio="none" aria-hidden="true" style="margin-top:8px">
+      <path d="M0 1 H760" />
+    </svg>
   </div>
 </section>
 
@@ -537,7 +582,12 @@
      ───────────────────────────── */
   const dotCanvas = document.getElementById("dot-canvas");
   const dctx = dotCanvas.getContext("2d");
-  let dots = [], dotW = 0, dotH = 0;
+  let dots = [], dotW = 0, dotH = 0, ripple = null;
+  const dotsSection = document.getElementById("dots");
+  dotsSection.addEventListener("pointermove", (event) => {
+    const r = dotsSection.getBoundingClientRect();
+    ripple = { x: event.clientX - r.left, y: event.clientY - r.top, t: performance.now() };
+  });
 
   function resizeDots() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -573,11 +623,24 @@
     const maxR = Math.hypot(dotW, dotH) * 0.62;
     const front = (t * 130) % (maxR + 280);
 
+    // 鼠标涟漪：以指针为圆心扩散一圈
+    const rippleAge = ripple ? now - ripple.t : Infinity;
+    const rippleR = rippleAge * 0.35;
+    const rippleFade = Math.max(0, 1 - rippleAge / 900);
+
     dctx.fillStyle = "#6E8BFF";
     for (let i = 0; i < dots.length; i += 2) {
       const dx = dots[i] - ox;
       const dy = dots[i + 1] - oy;
-      const k = Math.exp(-Math.pow((Math.sqrt(dx * dx + dy * dy) - front) / 55, 2));
+      let k = Math.exp(-Math.pow((Math.sqrt(dx * dx + dy * dy) - front) / 55, 2));
+
+      if (rippleFade > 0) {
+        const rx = dots[i] - ripple.x;
+        const ry = dots[i + 1] - ripple.y;
+        const kr = Math.exp(-Math.pow((Math.sqrt(rx * rx + ry * ry) - rippleR) / 28, 2)) * rippleFade;
+        if (kr > k) k = kr;
+      }
+
       if (k < 0.06) continue;
       const s = 2 + k * 3;
       dctx.globalAlpha = 0.2 + k * 0.8;
@@ -586,6 +649,123 @@
     dctx.globalAlpha = 1;
   }
   requestAnimationFrame(dotFrame);
+
+  /* ─────────────────────────────
+     五、雨滴沉积
+     雨滴是粒子，落点由"高度图"记住：一列一格的数值，
+     越积越高，画面底部就长出一条起伏的水面。
+     ───────────────────────────── */
+  const rainCanvas = document.getElementById("rain-canvas");
+  const rctx = rainCanvas.getContext("2d");
+  const RAIN_COLS = 64;
+  const heights = new Float32Array(RAIN_COLS);   // 每列的水位 0~1
+  const rainScratch = new Float32Array(RAIN_COLS);
+  const drops = [];
+  const MAX_FILL = 0.55;                    // 最多堆到屏高的 62%
+  let rainW = 0, rainH = 0, rainPrev = 0;
+
+  function resizeRain() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    rainW = rainCanvas.clientWidth;
+    rainH = rainCanvas.clientHeight;
+    rainCanvas.width = Math.round(rainW * dpr);
+    rainCanvas.height = Math.round(rainH * dpr);
+    rctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resizeRain();
+  addEventListener("resize", resizeRain);
+
+  for (let i = 0; i < 450; i++) {
+    drops.push({ x: Math.random(), y: Math.random(), v: 0.0022 + Math.random() * 0.0032 });
+  }
+
+  const surfaceY = (col) => rainH * (1 - MAX_FILL * heights[col]);
+
+  function rainFrame(now) {
+    requestAnimationFrame(rainFrame);
+    if (!rainW) return;
+    const dt = rainPrev ? Math.min(now - rainPrev, 50) : 16.7;
+    rainPrev = now;
+
+    rctx.clearRect(0, 0, rainW, rainH);
+
+    // 缓慢蒸发，水位才不会无限涨
+    for (let c = 0; c < RAIN_COLS; c++) heights[c] *= 0.9993;
+
+    // 横向扩散：让堆积有坡度，而不是每列各长各的
+    rainScratch.set(heights);
+    for (let c = 1; c < RAIN_COLS - 1; c++) {
+      heights[c] += (rainScratch[c - 1] + rainScratch[c + 1] - 2 * rainScratch[c]) * 0.04;
+    }
+
+    rctx.fillStyle = "rgba(160, 185, 225, 0.55)";
+    for (const drop of drops) {
+      drop.y += drop.v * dt;
+      const col = Math.min(RAIN_COLS - 1, Math.max(0, Math.floor(drop.x * RAIN_COLS)));
+      if (drop.y * rainH > surfaceY(col)) {
+        heights[col] = Math.min(0.92, heights[col] + 0.003);
+        drop.y = -0.05;
+        // 三角形分布：中间落得多，堆起来才有"山"的形状
+        drop.x = (Math.random() + Math.random()) / 2;
+        continue;
+      }
+      rctx.fillRect(drop.x * rainW, drop.y * rainH, 1, 6);
+    }
+
+    // 水面
+    const surf = new Path2D();
+    surf.moveTo(0, rainH);
+    for (let c = 0; c < RAIN_COLS; c++) surf.lineTo((c / (RAIN_COLS - 1)) * rainW, surfaceY(c));
+    surf.lineTo(rainW, rainH);
+    surf.closePath();
+
+    const grad = rctx.createLinearGradient(0, rainH * 0.4, 0, rainH);
+    grad.addColorStop(0, "rgba(114, 168, 216, 0.3)");
+    grad.addColorStop(1, "rgba(114, 168, 216, 0.05)");
+    rctx.fillStyle = grad;
+    rctx.fill(surf);
+
+    rctx.beginPath();
+    for (let c = 0; c < RAIN_COLS; c++) {
+      const x = (c / (RAIN_COLS - 1)) * rainW;
+      const y = surfaceY(c);
+      if (c === 0) rctx.moveTo(x, y);
+      else rctx.lineTo(x, y);
+    }
+    rctx.strokeStyle = "rgba(114, 168, 216, 0.75)";
+    rctx.lineWidth = 1.5;
+    rctx.stroke();
+  }
+  requestAnimationFrame(rainFrame);
+
+  /* ─────────────────────────────
+     六、聚光 + 线条生长
+     ───────────────────────────── */
+  const spot = document.getElementById("spot");
+  const spotPaths = [...spot.querySelectorAll(".grow-line path")];
+  const spotLens = spotPaths.map((path) => path.getTotalLength());
+
+  spotPaths.forEach((path, i) => {
+    path.style.strokeDasharray = spotLens[i];
+    path.style.strokeDashoffset = spotLens[i];
+  });
+
+  spot.addEventListener("pointermove", (event) => {
+    const r = spot.getBoundingClientRect();
+    spot.style.setProperty("--mx", `${event.clientX - r.left}px`);
+    spot.style.setProperty("--my", `${event.clientY - r.top}px`);
+  });
+
+  function growFrame() {
+    requestAnimationFrame(growFrame);
+    const r = spot.getBoundingClientRect();
+    const p = Math.min(1, Math.max(0, 1 - r.top / innerHeight));
+    spotPaths.forEach((path, i) => {
+      const local = Math.min(1, Math.max(0, (p - i * 0.14) / 0.72));
+      path.style.strokeDashoffset = spotLens[i] * (1 - local);
+    });
+  }
+  requestAnimationFrame(growFrame);
 })();
 </script>
 </body>
