@@ -19,6 +19,9 @@ function NavContent({ className = "" }: { className?: string }) {
         <Link href="/blog" className="transition-colors hover:text-foreground">
           博客
         </Link>
+        <Link href="/projects" className="transition-colors hover:text-foreground">
+          作品
+        </Link>
         <ThemeToggle />
       </div>
     </nav>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LocalClock } from "@/components/local-clock";
 import { getAllPosts } from "@/lib/posts";
+import { PROJECTS } from "@/lib/projects";
 
 const socials = [
   { label: "GitHub", href: "https://github.com/XenonAesir" },
@@ -74,6 +75,42 @@ export default function Home() {
             </div>
           </div>
         </div>
+      </section>
+
+      <section id="work" className="mx-auto w-full max-w-6xl px-6 pb-24 sm:px-10">
+        <div className="flex items-end justify-between border-b border-border pb-4">
+          <h2 className="text-[0.68rem] tracking-[0.3em] text-muted-foreground uppercase">
+            Selected Work
+          </h2>
+          <Link
+            href="/projects"
+            className="text-[0.68rem] tracking-[0.2em] text-muted-foreground uppercase transition-colors hover:text-foreground"
+          >
+            全部 →
+          </Link>
+        </div>
+        {PROJECTS.map((project) => (
+          <Link
+            key={project.slug}
+            href={`/projects/${project.slug}`}
+            className="group flex flex-col gap-2 border-b border-border/60 py-6"
+          >
+            <div className="flex items-baseline justify-between gap-6">
+              <span className="font-heading text-xl font-normal tracking-wide transition-colors group-hover:text-primary sm:text-2xl">
+                {project.name}
+              </span>
+              <span className="text-muted-foreground transition-transform group-hover:translate-x-1">
+                →
+              </span>
+            </div>
+            <span className="max-w-2xl text-sm leading-7 font-light text-muted-foreground">
+              {project.summary}
+            </span>
+            <span className="text-[0.65rem] tracking-[0.2em] text-muted-foreground uppercase">
+              {project.tags.join(" · ")}
+            </span>
+          </Link>
+        ))}
       </section>
 
       <section className="mx-auto w-full max-w-6xl px-6 pb-28 sm:px-10">
