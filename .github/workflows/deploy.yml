@@ -31,8 +31,8 @@ jobs:
 
       - run: pnpm build
         env:
-          # 构建时注入，RSS 和 sitemap 的绝对地址依赖它
-          NEXT_PUBLIC_SITE_URL: https://xenonaesir.github.io
+          # 构建时注入，RSS 和 sitemap 的绝对地址依赖它；正式域名是自定义站点
+          NEXT_PUBLIC_SITE_URL: https://xenonaesir.work
 
       - uses: actions/upload-pages-artifact@v3
         with:

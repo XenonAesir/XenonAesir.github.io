@@ -56,8 +56,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <SiteHeader />
           <main className="flex-1">{children}</main>
           <footer className="border-t border-border/60">
-            <div className="mx-auto w-full max-w-6xl px-6 py-8 text-xs tracking-[0.2em] text-muted-foreground sm:px-10">
-              © XENON AESIR
+            <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-8 text-xs tracking-[0.2em] text-muted-foreground sm:px-10">
+              <span>© XENON AESIR</span>
+              <a
+                href="https://beian.miit.gov.cn/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="tracking-[0.12em] transition-colors hover:text-foreground"
+              >
+                浙ICP备2026099769号
+              </a>
             </div>
           </footer>
         </ThemeProvider>
